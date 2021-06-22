@@ -49,9 +49,7 @@ public class CreateWorldCmd implements Subcommand {
                 return true;
             }
 
-            WorldsConfig config = ConfigManager.getWorldConfig();
-
-            if (config.getWorlds().containsKey(worldName)) {
+            if (ConfigManager.getWorlds().containsKey(worldName)) {
                 sender.sendMessage(Logging.COMMAND_PREFIX + ChatColor.RED + "There is already a world called  " + worldName + " inside the worlds config file.");
 
                 return true;
@@ -91,8 +89,8 @@ public class CreateWorldCmd implements Subcommand {
                             location.getBlock().setType(Material.BEDROCK);
 
                             // Config
-                            config.getWorlds().put(worldName, worldData);
-                            config.save();
+                            ConfigManager.getWorlds().put(worldName, worldData);
+                            // config.save();
 
                             sender.sendMessage(Logging.COMMAND_PREFIX + ChatColor.GREEN + "World " + ChatColor.YELLOW + worldName
                                     + ChatColor.GREEN + " created in " + (System.currentTimeMillis() - start) + "ms!");

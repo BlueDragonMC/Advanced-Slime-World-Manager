@@ -43,8 +43,7 @@ public class LoadWorldCmd implements Subcommand {
                 return true;
             }
 
-            WorldsConfig config = ConfigManager.getWorldConfig();
-            WorldData worldData = config.getWorlds().get(worldName);
+            WorldData worldData = ConfigManager.getWorlds().get(worldName);
 
             if (worldData == null) {
                 sender.sendMessage(Logging.COMMAND_PREFIX + ChatColor.RED + "Failed to find world " + worldName + " inside the worlds config file.");

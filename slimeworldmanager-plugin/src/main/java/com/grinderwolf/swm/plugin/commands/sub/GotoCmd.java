@@ -56,12 +56,12 @@ public class GotoCmd implements Subcommand {
                     ? "yourself" : ChatColor.YELLOW + target.getName() + ChatColor.GRAY) + " to " + ChatColor.AQUA + world.getName() + ChatColor.GRAY + "...");
 
             Location spawnLocation;
-            if(ConfigManager.getWorldConfig().getWorlds().containsKey(world.getName())) {
-                String spawn = ConfigManager.getWorldConfig().getWorlds().get(world.getName()).getSpawn();
-                String[] coords = spawn.split(", ");
-                double x = Double.parseDouble(coords[0]);
-                double y = Double.parseDouble(coords[1]);
-                double z = Double.parseDouble(coords[2]);
+            if(ConfigManager.getWorlds().containsKey(world.getName())) {
+                String spawn = ConfigManager.getWorlds().get(world.getName()).getSpawn();
+                String[] coords = spawn.split(",");
+                double x = Double.parseDouble(coords[0].trim());
+                double y = Double.parseDouble(coords[1].trim());
+                double z = Double.parseDouble(coords[2].trim());
                 spawnLocation = new Location(world, x, y, z);
             }else{
                 spawnLocation = world.getSpawnLocation();

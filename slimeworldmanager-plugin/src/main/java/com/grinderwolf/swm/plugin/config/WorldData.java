@@ -46,6 +46,24 @@ public class WorldData {
     @Setting("readOnly")
     private boolean readOnly = false;
 
+    public WorldData() {
+        //Must have a zero-parameter constructor to use `@ConfigSerializable`
+    }
+
+    public WorldData(String dataSource, String spawn, String difficulty, boolean allowAnimals, boolean dragonBattle, boolean pvp, String environment, String worldType, String defaultBiome, boolean loadOnStartup, boolean readOnly) {
+        this.dataSource = dataSource;
+        this.spawn = spawn;
+        this.difficulty = difficulty;
+        this.allowAnimals = allowAnimals;
+        this.dragonBattle = dragonBattle;
+        this.pvp = pvp;
+        this.environment = environment;
+        this.worldType = worldType;
+        this.defaultBiome = defaultBiome;
+        this.loadOnStartup = loadOnStartup;
+        this.readOnly = readOnly;
+    }
+
     public SlimePropertyMap toPropertyMap() {
         try {
             Enum.valueOf(Difficulty.class, this.difficulty.toUpperCase());

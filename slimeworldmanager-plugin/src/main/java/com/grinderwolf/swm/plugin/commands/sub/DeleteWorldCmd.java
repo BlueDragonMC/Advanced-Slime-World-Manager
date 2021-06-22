@@ -99,10 +99,9 @@ public class DeleteWorldCmd implements Subcommand {
                             loader.deleteWorld(worldName);
 
                             // Now let's delete it from the config file
-                            WorldsConfig config = ConfigManager.getWorldConfig();
 
-                            config.getWorlds().remove(worldName);
-                            config.save();
+                            ConfigManager.getWorlds().remove(worldName);
+                            // config.save();
 
                             sender.sendMessage(Logging.COMMAND_PREFIX + ChatColor.GREEN + "World " + ChatColor.YELLOW + worldName
                                     + ChatColor.GREEN + " deleted in " + (System.currentTimeMillis() - start) + "ms!");

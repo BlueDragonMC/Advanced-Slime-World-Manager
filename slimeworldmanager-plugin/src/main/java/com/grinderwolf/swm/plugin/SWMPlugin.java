@@ -23,7 +23,6 @@ import com.grinderwolf.swm.plugin.world.WorldUnlocker;
 import com.grinderwolf.swm.plugin.world.importer.WorldImporter;
 import lombok.Getter;
 import ninja.leaping.configurate.objectmapping.ObjectMappingException;
-import org.bstats.bukkit.Metrics;
 import org.bukkit.Bukkit;
 import org.bukkit.Difficulty;
 import org.bukkit.World;
@@ -41,14 +40,13 @@ public class SWMPlugin extends JavaPlugin implements SlimePlugin {
     @Getter
     private SlimeNMS nms;
 
-    private final List<SlimeWorld> worlds = new ArrayList<>();
-
     private static boolean isPaperMC = false;
 
     private static boolean checkIsPaper() {
         try {
+            //todo this breaks when Paper changes its package name to io.papermc.paper
             return Class.forName("com.destroystokyo.paper.PaperConfig") != null;
-        } catch(ClassNotFoundException ex) {
+        } catch (ClassNotFoundException ex) {
             return false;
         }
     }
@@ -74,34 +72,10 @@ public class SWMPlugin extends JavaPlugin implements SlimePlugin {
             return;
         }
 
-        List<String> erroredWorlds = loadWorlds();
-
-        // Default world override
         try {
-            Properties props = new Properties();
-
-            props.load(new FileInputStream("server.properties"));
-            String defaultWorldName = props.getProperty("level-name");
-
-            if (erroredWorlds.contains(defaultWorldName)) {
-                Logging.error("Shutting down server, as the default world could not be loaded.");
-                System.exit(1);
-            } else if (getServer().getAllowNether() && erroredWorlds.contains(defaultWorldName + "_nether")) {
-                Logging.error("Shutting down server, as the default nether world could not be loaded.");
-                System.exit(1);
-            } else if (getServer().getAllowEnd() && erroredWorlds.contains(defaultWorldName + "_the_end")) {
-                Logging.error("Shutting down server, as the default end world could not be loaded.");
-                System.exit(1);
-            }
-
-            SlimeWorld defaultWorld = worlds.stream().filter(world -> world.getName().equals(defaultWorldName)).findFirst().orElse(null);
-            SlimeWorld netherWorld = (getServer().getAllowNether() ? worlds.stream().filter(world -> world.getName().equals(defaultWorldName + "_nether")).findFirst().orElse(null) : null);
-            SlimeWorld endWorld = (getServer().getAllowEnd() ? worlds.stream().filter(world -> world.getName().equals(defaultWorldName + "_the_end")).findFirst().orElse(null) : null);
-
-            nms.setDefaultWorlds(defaultWorld, netherWorld, endWorld);
-        } catch (IOException ex) {
-            Logging.error("Failed to retrieve default world name:");
-            ex.printStackTrace();
+            nms.setDefaultWorlds(null, null, null);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
@@ -112,7 +86,7 @@ public class SWMPlugin extends JavaPlugin implements SlimePlugin {
             return;
         }
 
-        new Metrics(this);
+        // new Metrics(this);
 
         final CommandManager commandManager = new CommandManager();
         final PluginCommand swmCommand = getCommand("swm");
@@ -129,14 +103,6 @@ public class SWMPlugin extends JavaPlugin implements SlimePlugin {
         if (ConfigManager.getMainConfig().getUpdaterOptions().isEnabled()) {
             getServer().getPluginManager().registerEvents(new Updater(), this);
         }
-
-        for (SlimeWorld world : worlds) {
-            if (Bukkit.getWorld(world.getName()) == null) {
-                generateWorld(world);
-            }
-        }
-
-        worlds.clear();
     }
 
     private SlimeNMS getNMSBridge() throws InvalidVersionException {
@@ -201,13 +167,6 @@ public class SWMPlugin extends JavaPlugin implements SlimePlugin {
         Logging.info("World " + fileName + " loaded in " + (System.currentTimeMillis() - start) + "ms.");
 
         return world;
-    }
-
-    @Override
-    public SlimeWorld createEmptyWorld(SlimeLoader loader, String worldName, SlimeWorld.SlimeProperties properties) throws WorldAlreadyExistsException, IOException {
-        Objects.requireNonNull(properties, "Properties cannot be null");
-
-        return createEmptyWorld(loader, worldName, properties.isReadOnly(), propertiesToMap(properties));
     }
 
     @Override

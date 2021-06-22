@@ -40,8 +40,7 @@ public class CloneWorldCmd implements Subcommand {
 
             String templateWorldName = args[0];
 
-            WorldsConfig config = ConfigManager.getWorldConfig();
-            WorldData worldData = config.getWorlds().get(templateWorldName);
+            WorldData worldData = ConfigManager.getWorlds().get(templateWorldName);
 
             if (worldData == null) {
                 sender.sendMessage(Logging.COMMAND_PREFIX + ChatColor.RED + "Failed to find world " + templateWorldName + " inside the worlds config file.");

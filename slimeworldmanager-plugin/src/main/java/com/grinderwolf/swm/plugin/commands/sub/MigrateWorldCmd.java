@@ -81,7 +81,7 @@ public class MigrateWorldCmd implements Subcommand {
                     SWMPlugin.getInstance().migrateWorld(worldName, oldLoader, newLoader);
 
                     worldData.setDataSource(newSource);
-                    config.save();
+                    // config.save();
 
                     sender.sendMessage(Logging.COMMAND_PREFIX + ChatColor.GREEN + "World " + ChatColor.YELLOW + worldName + ChatColor.GREEN + " migrated in "
                             + (System.currentTimeMillis() - start) + "ms!");
