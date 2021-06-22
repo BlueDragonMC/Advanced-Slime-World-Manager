@@ -11,7 +11,6 @@ import com.grinderwolf.swm.plugin.SWMPlugin;
 import com.grinderwolf.swm.plugin.commands.CommandManager;
 import com.grinderwolf.swm.plugin.config.ConfigManager;
 import com.grinderwolf.swm.plugin.config.WorldData;
-import com.grinderwolf.swm.plugin.config.WorldsConfig;
 import com.grinderwolf.swm.plugin.log.Logging;
 import lombok.Getter;
 import org.bukkit.Bukkit;
@@ -45,8 +44,7 @@ public class LoadTemplateWorldCmd implements Subcommand {
 
             String templateWorldName = args[0];
 
-            WorldsConfig config = ConfigManager.getWorldConfig();
-            WorldData worldData = config.getWorlds().get(templateWorldName);
+            WorldData worldData = ConfigManager.getWorlds().get(templateWorldName);
 
             if (worldData == null) {
                 sender.sendMessage(Logging.COMMAND_PREFIX + ChatColor.RED + "Failed to find world " + templateWorldName + " inside the worlds config file.");
@@ -81,7 +79,7 @@ public class LoadTemplateWorldCmd implements Subcommand {
                         throw new IllegalArgumentException("invalid data source " + worldData.getDataSource());
                     }
 
-                    SlimeWorld slimeWorld = SWMPlugin.getInstance().loadWorld(loader, templateWorldName, true, worldData.toPropertyMap()).clone(worldName);
+                    SlimeWorld slimeWorld = SWMPlugin.getInstance().loadWorld(loader, templateWorldName, templateWorldName,true, worldData.toPropertyMap()).clone(worldName);
                     Bukkit.getScheduler().runTask(SWMPlugin.getInstance(), () -> {
                         try {
                             SWMPlugin.getInstance().generateWorld(slimeWorld);

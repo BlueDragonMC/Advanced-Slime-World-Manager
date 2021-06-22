@@ -4,7 +4,6 @@ import com.grinderwolf.swm.api.exceptions.UnknownWorldException;
 import com.grinderwolf.swm.api.loaders.SlimeLoader;
 import com.grinderwolf.swm.plugin.config.ConfigManager;
 import com.grinderwolf.swm.plugin.config.WorldData;
-import com.grinderwolf.swm.plugin.config.WorldsConfig;
 import com.grinderwolf.swm.plugin.loaders.LoaderUtils;
 import com.grinderwolf.swm.plugin.log.Logging;
 import lombok.Getter;
@@ -46,8 +45,7 @@ public class UnloadWorldCmd implements Subcommand {
             if (args.length > 1) {
                 source = args[1];
             } else {
-                WorldsConfig config = ConfigManager.getWorldConfig();
-                WorldData worldData = config.getWorlds().get(worldName);
+                WorldData worldData = ConfigManager.getWorlds().get(worldName);
 
                 if (worldData == null) {
                     sender.sendMessage(Logging.COMMAND_PREFIX + ChatColor.RED + "Unknown world " + worldName + "! Are you sure you've typed it correctly?");

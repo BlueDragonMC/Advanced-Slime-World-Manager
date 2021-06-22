@@ -6,7 +6,6 @@ import com.grinderwolf.swm.api.SlimePlugin;
 import com.grinderwolf.swm.api.exceptions.*;
 import com.grinderwolf.swm.api.loaders.SlimeLoader;
 import com.grinderwolf.swm.api.world.SlimeWorld;
-import com.grinderwolf.swm.api.world.properties.SlimeProperties;
 import com.grinderwolf.swm.api.world.properties.SlimePropertyMap;
 import com.grinderwolf.swm.nms.CraftSlimeWorld;
 import com.grinderwolf.swm.nms.SlimeNMS;
@@ -16,7 +15,6 @@ import com.grinderwolf.swm.nms.v1_16_R3.v1_16_R3SlimeNMS;
 import com.grinderwolf.swm.plugin.commands.CommandManager;
 import com.grinderwolf.swm.plugin.config.ConfigManager;
 import com.grinderwolf.swm.plugin.config.WorldData;
-import com.grinderwolf.swm.plugin.config.WorldsConfig;
 import com.grinderwolf.swm.plugin.loaders.LoaderUtils;
 import com.grinderwolf.swm.plugin.log.Logging;
 import com.grinderwolf.swm.plugin.update.Updater;
@@ -33,11 +31,8 @@ import org.bukkit.command.PluginCommand;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import static com.grinderwolf.swm.api.world.properties.SlimeProperties.*;
 
@@ -160,74 +155,18 @@ public class SWMPlugin extends JavaPlugin implements SlimePlugin {
         }
     }
 
-    private List<String> loadWorlds() {
-        List<String> erroredWorlds = new ArrayList<>();
-        WorldsConfig config = ConfigManager.getWorldConfig();
-
-        for (Map.Entry<String, WorldData> entry : config.getWorlds().entrySet()) {
-            String worldName = entry.getKey();
-            WorldData worldData = entry.getValue();
-
-            if (worldData.isLoadOnStartup()) {
-                try {
-                    SlimeLoader loader = getLoader(worldData.getDataSource());
-
-                    if (loader == null) {
-                        throw new IllegalArgumentException("invalid data source " + worldData.getDataSource() + "");
-                    }
-
-                    SlimePropertyMap propertyMap = worldData.toPropertyMap();
-                    SlimeWorld world = loadWorld(loader, worldName, worldData.isReadOnly(), propertyMap);
-
-                    worlds.add(world);
-                } catch (IllegalArgumentException | UnknownWorldException | NewerFormatException | WorldInUseException | CorruptedWorldException | IOException ex) {
-                    String message;
-
-                    if (ex instanceof IllegalArgumentException) {
-                        message = ex.getMessage();
-                    } else if (ex instanceof UnknownWorldException) {
-                        message = "world does not exist, are you sure you've set the correct data source?";
-                    } else if (ex instanceof NewerFormatException) {
-                        message = "world is serialized in a newer Slime Format version (" + ex.getMessage() + ") that SWM does not understand.";
-                    } else if (ex instanceof WorldInUseException) {
-                        message = "world is in use! If you think this is a mistake, please wait some time and try again.";
-                    } else if (ex instanceof CorruptedWorldException) {
-                        message = "world seems to be corrupted.";
-                    } else {
-                        message = "";
-
-                        ex.printStackTrace();
-                    }
-
-                    Logging.error("Failed to load world " + worldName + (message.isEmpty() ? "." : ": " + message));
-                    erroredWorlds.add(worldName);
-                }
-            }
-        }
-
-        config.save();
-        return erroredWorlds;
-    }
-
     @Override
-    public SlimeWorld loadWorld(SlimeLoader loader, String worldName, SlimeWorld.SlimeProperties properties) throws UnknownWorldException,
-            IOException, CorruptedWorldException, NewerFormatException, WorldInUseException {
-        Objects.requireNonNull(properties, "Properties cannot be null");
-
-        return loadWorld(loader, worldName, properties.isReadOnly(), propertiesToMap(properties));
-    }
-
-    @Override
-    public SlimeWorld loadWorld(SlimeLoader loader, String worldName, boolean readOnly, SlimePropertyMap propertyMap) throws UnknownWorldException, IOException,
+    public SlimeWorld loadWorld(SlimeLoader loader, String fileName, String worldName, boolean readOnly, SlimePropertyMap propertyMap) throws UnknownWorldException, IOException,
             CorruptedWorldException, NewerFormatException, WorldInUseException {
         Objects.requireNonNull(loader, "Loader cannot be null");
+        Objects.requireNonNull(fileName, "File name cannot be null");
         Objects.requireNonNull(worldName, "World name cannot be null");
         Objects.requireNonNull(propertyMap, "Properties cannot be null");
 
         long start = System.currentTimeMillis();
 
-        Logging.info("Loading world " + worldName + ".");
-        byte[] serializedWorld = loader.loadWorld(worldName, readOnly);
+        Logging.info("Loading world " + worldName + " (" + fileName + ").");
+        byte[] serializedWorld = loader.loadWorld(fileName, readOnly);
         CraftSlimeWorld world;
 
         try {
@@ -240,13 +179,26 @@ public class SWMPlugin extends JavaPlugin implements SlimePlugin {
             }
         } catch (Exception ex) {
             if (!readOnly) { // Unlock the world as we're not using it
-                loader.unlockWorld(worldName);
+                loader.unlockWorld(fileName);
             }
 
             throw ex;
         }
 
-        Logging.info("World " + worldName + " loaded in " + (System.currentTimeMillis() - start) + "ms.");
+        ConfigManager.getWorlds().put(fileName, new WorldData(
+                loader.getClass().getPackageName(),
+                propertyMap.getValue(SPAWN_X) + "," + propertyMap.getValue(SPAWN_Y) + "," + propertyMap.getValue(SPAWN_Z),
+                propertyMap.getValue(DIFFICULTY),
+                propertyMap.getValue(ALLOW_ANIMALS),
+                propertyMap.getValue(ALLOW_MONSTERS),
+                propertyMap.getValue(PVP),
+                propertyMap.getValue(ENVIRONMENT),
+                propertyMap.getValue(WORLD_TYPE),
+                propertyMap.getValue(DEFAULT_BIOME),
+                false, //No worlds are auto loaded on startup anyways
+                true   //No world data is ever saved
+        ));
+        Logging.info("World " + fileName + " loaded in " + (System.currentTimeMillis() - start) + "ms.");
 
         return world;
     }

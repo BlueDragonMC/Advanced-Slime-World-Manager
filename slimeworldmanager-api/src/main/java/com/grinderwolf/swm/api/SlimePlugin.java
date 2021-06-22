@@ -64,7 +64,7 @@ public interface SlimePlugin {
      * @throws NewerFormatException if the world uses a newer version of the SRF.
      * @throws WorldInUseException if the world is already being used on another server when trying to open it without read-only mode enabled.
      */
-    SlimeWorld loadWorld(SlimeLoader loader, String worldName, boolean readOnly, SlimePropertyMap propertyMap) throws
+    SlimeWorld loadWorld(SlimeLoader loader, String fileName, String worldName, boolean readOnly, SlimePropertyMap propertyMap) throws
             UnknownWorldException, IOException, CorruptedWorldException, NewerFormatException, WorldInUseException;
 
     /**

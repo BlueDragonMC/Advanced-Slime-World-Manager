@@ -53,7 +53,7 @@ public class WorldListCmd implements Subcommand {
         }
 
         List<String> worldsList = new ArrayList<>(loadedWorlds.keySet());
-        ConfigManager.getWorldConfig().getWorlds().keySet().stream().filter((world) -> !worldsList.contains(world)).forEach(worldsList::add);
+        ConfigManager.getWorlds().keySet().stream().filter((world) -> !worldsList.contains(world)).forEach(worldsList::add);
 
         if (worldsList.isEmpty()) {
             sender.sendMessage(Logging.COMMAND_PREFIX + ChatColor.RED + "There are no worlds configured.");
